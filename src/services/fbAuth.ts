@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-const { admin, db } = require("./admin");
+import * as admin from "firebase-admin";
+import { db } from "./admin";
 
 const Auth = async (req: Request, res: Response, next: () => any) => {
   let idToken;
@@ -20,7 +21,6 @@ const Auth = async (req: Request, res: Response, next: () => any) => {
       .where("userId", "==", decodedToken.uid)
       .limit(1)
       .get();
-
     decodedToken.handle = data.docs[0].data().handle;
     return next();
   } catch (error) {

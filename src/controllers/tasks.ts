@@ -12,7 +12,6 @@ import { Project, Task } from "../models/Task";
 //Projects
 export const getProjects = async (req: Request, res: Response) => {
   const priority = req.query.priority?.toString();
-  //Ovo iznad proveri
   if (req.headers.userid === undefined) {
     console.log("UserId = undefined");
     return res.status(400).json({ error: "UserId = undefined" });

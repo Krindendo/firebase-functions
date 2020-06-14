@@ -38,7 +38,6 @@ export const signup = async (req: Request, res: Response) => {
     return res.status(201).json({ idToken });
   } catch (error) {
     console.error("Register", error);
-
     if (error.code === "auth/email-already-in-use")
       return res.status(400).json({ email: "Email is already in use" });
     return res.status(500).json({ error: error.code });
