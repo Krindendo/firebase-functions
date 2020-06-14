@@ -9,4 +9,4 @@ node_modules/
 
 lib/
 key/
-service/config.ts
+src/services/config.ts
