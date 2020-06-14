@@ -7,9 +7,9 @@ export interface Project {
 }
 
 export interface Task {
-  name: string;
-  created: string;
+  task: string;
+  date: string;
+  projectId: string;
   userId: string | string[] | undefined;
-  priority: string;
-  docId?: string;
+  id?: string;
 }

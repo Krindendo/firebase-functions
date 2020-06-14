@@ -1,21 +1,21 @@
 import * as functions from "firebase-functions";
 import * as express from "express";
-import { FBAuth } from "./services/fbAuth";
+import Auth from "./services/fbAuth";
 import * as cors from "cors";
 
 import { signup, login, anonimus } from "./controllers/users";
 import {
   getProjects,
-  creatProject,
+  createProject,
   deleteProject,
   getTasks,
-  creatTask,
+  createTask,
   deleteTask,
 } from "./controllers/tasks";
 import {
   getTags,
   getNotes,
-  creatNote,
+  createNote,
   updateNote,
   deleteNote,
 } from "./controllers/notes";
@@ -35,24 +35,24 @@ app.post("/login", login);
 app.post("/anonimus", anonimus);
 
 //tasks routs
-app.get("/projects", FBAuth, getProjects);
-app.post("/projects", FBAuth, creatProject);
-app.delete("/projects/:id", FBAuth, deleteProject);
-app.get("/tasks", FBAuth, getTasks);
-app.post("/tasks", FBAuth, creatTask);
-app.delete("/tasks/:id", FBAuth, deleteTask);
+app.get("/projects", Auth, getProjects);
+app.post("/projects", Auth, createProject);
+app.delete("/projects/:id", Auth, deleteProject);
+app.get("/tasks", Auth, getTasks);
+app.post("/tasks", Auth, createTask);
+app.delete("/tasks/:id", Auth, deleteTask);
 
 //notes routs
-app.get("/tags", FBAuth, getTags);
-app.get("/notes", FBAuth, getNotes);
-app.post("/notes", FBAuth, creatNote);
-app.patch("/notes/:id", FBAuth, updateNote);
-app.delete("/notes/:id", FBAuth, deleteNote);
+app.get("/tags", Auth, getTags);
+app.get("/notes", Auth, getNotes);
+app.post("/notes", Auth, createNote);
+app.patch("/notes/:id", Auth, updateNote);
+app.delete("/notes/:id", Auth, deleteNote);
 
 //files routs
-app.get("/clouds", FBAuth, listofDoc);
-app.post("/clouds", FBAuth, uploadDoc);
-app.delete("/clouds/:id", FBAuth, deleteDoc);
-app.post("/download", FBAuth, downloadDoc);
+app.get("/clouds", Auth, listofDoc);
+app.post("/clouds", Auth, uploadDoc);
+app.delete("/clouds/:id", Auth, deleteDoc);
+app.post("/download", Auth, downloadDoc);
 
 exports.api = functions.region("europe-west1").https.onRequest(app);

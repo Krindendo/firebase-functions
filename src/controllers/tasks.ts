@@ -7,7 +7,7 @@ import {
 } from "../services/validators";
 import { collatedPriority } from "../services/constants";
 import * as moment from "moment";
-import { Project, Task } from "../models/Note";
+import { Project, Task } from "../models/Task";
 
 //Projects
 export const getProjects = async (req: Request, res: Response) => {
@@ -41,7 +41,7 @@ export const getProjects = async (req: Request, res: Response) => {
     return res.status(500).json({ error: error.code });
   }
 };
-export const creatProject = async (req: Request, res: Response) => {
+export const createProject = async (req: Request, res: Response) => {
   const { name, priority }: { name: string; priority: string } = req.body;
   if (name.trim() === "")
     return res.status(400).json({ body: "Name must not be empty" });
@@ -103,6 +103,132 @@ export const deleteProject = async (req: Request, res: Response) => {
 };
 
 //Tasks
-export const getTasks = async (req: Request, res: Response) => {};
-export const creatTask = async (req: Request, res: Response) => {};
-export const deleteTask = async (req: Request, res: Response) => {};
+export const getTasks = async (req: Request, res: Response) => {
+  let project = req.query.selectedProject?.toString();
+
+  if (req.headers.userid === undefined) {
+    console.log("Userid = undefined");
+    return res.status(400).json({ error: "Userid = undefined" });
+  }
+
+  let unsubscribe = db
+    .collection("tasks")
+    .where("userId", "==", req.headers.userid);
+
+  switch (project) {
+    case project && !collatedTasksExist(project):
+      unsubscribe = unsubscribe
+        .where("projectId", "==", project)
+        .orderBy("date", "desc");
+      break;
+    case "Today":
+      unsubscribe = unsubscribe.where(
+        "date",
+        "<=",
+        moment().format("YYYY/MM/DD")
+      );
+      break;
+    case "Tomorrow":
+      unsubscribe = unsubscribe.where(
+        "date",
+        "==",
+        moment().add(1, "days").format("YYYY/MM/DD")
+      );
+      break;
+    case "Upcoming":
+      unsubscribe = unsubscribe.where(
+        "date",
+        ">",
+        moment().add(1, "days").format("YYYY/MM/DD")
+      );
+      break;
+    default:
+      unsubscribe = unsubscribe;
+      break;
+  }
+
+  /*
+  if (project && !collatedTasksExist(project)) {
+    unsubscribe = unsubscribe
+      .where("projectId", "==", project)
+      .orderBy("date", "desc");
+  } else {
+    if (project === "Today") {
+      unsubscribe = unsubscribe.where(
+        "date",
+        "<=",
+        moment().format("YYYY/MM/DD")
+      );
+    } else {
+      if (project === "Tomorrow") {
+        unsubscribe = unsubscribe.where(
+          "date",
+          "==",
+          moment().add(1, "days").format("YYYY/MM/DD")
+        );
+      } else {
+        if (project === "Upcoming") {
+          unsubscribe = unsubscribe.where(
+            "date",
+            ">",
+            moment().add(1, "days").format("YYYY/MM/DD")
+          );
+        } else {
+          unsubscribe = unsubscribe;
+        }
+      }
+    }
+  }*/
+
+  try {
+    const doc = await unsubscribe.get();
+    const tasks = doc.docs.map((task) => ({
+      id: task.id,
+      ...task.data(),
+    }));
+    return res.status(200).json(tasks);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+export const createTask = async (req: Request, res: Response) => {
+  let currentdate;
+  const { task, date, projectId } = req.body;
+
+  if (task.trim() === "")
+    return res.status(400).json({ task: "Body must not be empty" });
+
+  if (date === null || date === "") {
+    currentdate = moment().format("YYYY/MM/DD");
+  } else {
+    currentdate = moment(date).format("YYYY/MM/DD");
+  }
+
+  const newTask: Task = {
+    task,
+    date: currentdate,
+    projectId,
+    userId: req.headers.userid,
+  };
+  try {
+    const ref = await db.collection("tasks").add(newTask);
+    newTask.id = ref.id;
+    return res.status(200).json({ newTask });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+export const deleteTask = async (req: Request, res: Response) => {
+  const task = db.doc(`/tasks/${req.params.id}`);
+  try {
+    const doc = await task.get();
+    if (!doc.exists) return res.status(404).json({ error: "Task not found" });
+    await task.delete();
+    return res.json({ message: "Task deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: error.code });
+  }
+};

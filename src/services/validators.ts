@@ -40,7 +40,7 @@ export const validateLoginData = (data: User) => {
   };
 };
 
-export const collatedTasksExist = (selectedProject) => {
+export const collatedTasksExist = (selectedProject: string) => {
   return collatedTasks.find((task) => task.name === selectedProject);
 };
 
@@ -50,7 +50,7 @@ export const collatedPriorityExist = (selectedPriority: string) => {
   );
 };
 
-export const collatedSectionExist = (selectedSection) => {
+export const collatedSectionExist = (selectedSection: string) => {
   return collatedSection.find((section) => section.name === selectedSection);
 };
 
